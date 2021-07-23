@@ -15,6 +15,70 @@ using the method `GetIfMaxAge(string, time.Duration)` will not return the data i
 
 Check the [examples](./example/main.go) .
 
+### Basic usage
+
+```
+
+package main
+
+import (
+	"github.com/kandros/diskcache"
+	"github.com/sanity-io/litter"
+	"github.com/spf13/afero"
+)
+
+func main() {
+	fs := afero.NewOsFs()
+	dc := diskcache.New(fs, "mytest")
+
+	type a struct {
+		Name string
+	}
+
+	aa := a{Name: "jaga"}
+	dc.Set("mydata", aa)
+	bb := &a{} /* Name: "" */
+	litter.Dump(bb)
+	err := dc.Get("mydata", bb)
+	if err != nil {
+		litter.Dump(err.Error())
+		return
+	}
+	litter.Dump(bb) /* Name: "jaga" */
+}
+```
+
+#### Refuse value if stale
+
+```
+package main
+
+import (
+	"time"
+
+	"github.com/kandros/diskcache"
+	"github.com/sanity-io/litter"
+	"github.com/spf13/afero"
+)
+
+func main() {
+	fs := afero.NewOsFs()
+	dc := diskcache.New(fs, "mytest")
+
+	type a struct {
+		Name string
+	}
+
+	aa := a{Name: "jaga"}
+	dc.Set("my_data_with_max_age", aa)
+	bb := &a{}
+	litter.Dump(bb)
+	time.Sleep(3)
+	err := dc.GetIfMaxAge("mydata", bb, 1*time.Second)
+	litter.Dump(err.Error()) /* expired */
+}
+```
+
 ## Using
 
 - https://github.com/spf13/afero to have a testable filesystem in memory

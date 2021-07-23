@@ -64,13 +64,21 @@ func (dc DiskCache) Set(dataName string, value interface{}) {
 	}
 }
 
+type dataNotFoundError struct {
+	dataName, filePath string
+}
+
+func (e dataNotFoundError) Error() string {
+	return fmt.Sprintf("%q data does not exist at %q", e.dataName, e.filePath)
+}
+
 func (dc DiskCache) Get(dataName string, value interface{}) error {
 	filePath := path.Join(dc.path, dataName)
 	file, err := dc.fs.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
 
 	if err != nil {
 		if os.IsNotExist(err) {
-			return fmt.Errorf("%q data does not exist at %q", dataName, filePath)
+			return dataNotFoundError{dataName: dataName, filePath: filePath}
 		}
 		log.Fatalf("Failed to open file %q, %v", dataName, err)
 	}

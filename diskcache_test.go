@@ -116,4 +116,5 @@ func TestGetIfMaxAgeExpired(t *testing.T) {
 	out := []string{}
 	err := dc.GetIfMaxAge(dataName, &out, 1*time.Millisecond)
 	is.Equal(err.Error(), "expired")
+	is.Equal(out, []string{})
 }
